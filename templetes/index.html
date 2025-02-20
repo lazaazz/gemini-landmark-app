@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Landmark AI Chat</title>
+</head>
+<body>
+    <h1>Interactive Landmark AI</h1>
+
+    <label for="language">Choose a Language:</label>
+    <select id="language">
+        <option value="english">English</option>
+        <option value="hindi">Hindi</option>
+        <option value="telugu">Telugu</option>
+    </select>
+
+    <label for="monument">Enter Monument Name:</label>
+    <input type="text" id="monument">
+
+    <label for="chatInput">Ask the Monument:</label>
+    <input type="text" id="chatInput">
+    <button onclick="sendMessage()">Ask</button>
+
+    <video id="monumentVideo" width="600" controls></video>
+    <audio id="monumentAudio" controls></audio>
+
+    <p id="responseText"></p>
+
+    <script>
+        function sendMessage() {
+            let monument = document.getElementById("monument").value.toLowerCase();
+            let userMessage = document.getElementById("chatInput").value;
+            let language = document.getElementById("language").value;
+
+            fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: userMessage, monument: monument, language: language })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("responseText").innerText = data.response;
+                document.getElementById("monumentVideo").src = data.video_url;
+                document.getElementById("monumentAudio").src = data.audio_url;
+            });
+        }
+    </script>
+    <h2>Upload a Monument Image</h2>
+    <input type="file" id="imageUpload">
+    <button onclick="uploadImage()">Identify Monument</button>
+    <p id="monumentName"></p>
+    
+    <script>
+        function uploadImage() {
+            let fileInput = document.getElementById("imageUpload");
+            let formData = new FormData();
+            formData.append("image", fileInput.files[0]);
+    
+            fetch("/identify", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("monumentName").innerText = "Monument: " + data.monument;
+                document.getElementById("monumentVideo").src = data.video_url;
+            });
+        }
+    </script>
+    
+</body>
+</html>
